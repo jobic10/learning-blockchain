@@ -1,11 +1,13 @@
 import json
-from solcx import compile_standard
-# install_solc("0.6.0")
+from solcx import compile_standard, install_solc
 from web3 import Web3
+from dotenv import load_dotenv
+import os
+load_dotenv()
 with open("./SimpleStorage.sol")as file:
     simpleStorageFile = file.read()
 
-
+install_solc("0.6.0")
 compiled_sol = compile_standard({
     "language": "Solidity",
     "sources": {"SimpleStorage.sol": {"content": simpleStorageFile}},
@@ -30,10 +32,13 @@ abi = compiled_sol['contracts']['SimpleStorage.sol']['SimpleStorage']['abi']
 
 
 # Connecting to Ganache
-w3 = Web3(Web3.HTTPProvider("http://127.0.0.1:7545"))
+w3 = Web3(Web3.HTTPProvider("HTTP://127.0.0.1:7545"))
 chain_id = 1337
-my_address = "0xA3b477b7673CCAD96Ab02D660a6CDD6e76cCbCcf"
-private_key = "0x965d1fd74aed1a54d9317471efdb37df38163d29a6b79d39b9a3ee085df85852"
+
+# My Key and Address changes always, hence I did not save them in environs. I'm using Ganache
+my_address = "0x5D5c5451193F8f1a30B9002FA10FeC4Cc08c7a10"
+private_key = os.getenv('PRIVATE_KEY')
+print(private_key)
 
 
 SimpleStorage = w3.eth.contract(abi=abi, bytecode=bytecode)
@@ -44,8 +49,15 @@ nonce = w3.eth.getTransactionCount(my_address)
 # 1: Build a transaction
 # 2: Sign "" ""
 # 3: Send "" ""
-
-transaction = SimpleStorage.constructor().buildTransaction(
-    {"chainId": chain_id, "from": my_address, "nonce": nonce}
-)
-print(transaction)
+# print(SimpleStorage)
+# print(SimpleStorage.constructor())
+# print(SimpleStorage.constructor().buildTransaction())
+print(w3.eth.gas_price)
+transaction = SimpleStorage.constructor().buildTransaction({
+    "gasPrice": w3.eth.gas_price,
+    "chainId": chain_id,
+    "from": my_address,
+    "nonce": nonce,
+})
+# signed_transaxtion = w3.eth.account.sign_transaction(
+#     transaction=transaction, private_key=private_key)
